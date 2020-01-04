@@ -3,7 +3,16 @@ const fs = require("fs");
 const path = require("path");
 const rimraf = require("rimraf");
 
-run("nomad-dart", "~/path");
+if (process.argv.length !== 4) {
+  console.log(`
+Incorrect Usage:
+
+node index.js <prefix> <path-to-save-build-files>
+  `);
+  process.exit(1);
+}
+
+run(process.argv[2], process.argv[3]);
 
 function run(prefix, destinationPath) {
   // Turn on instrumentation via environment variable
@@ -15,7 +24,6 @@ function run(prefix, destinationPath) {
     "Development Build"
   )
     .then(out => {
-      console.log(out.join("\n"));
       return serialTimes(
         5,
         num => buildTimings(true, prefix, num, destinationPath),
@@ -23,15 +31,13 @@ function run(prefix, destinationPath) {
       );
     })
     .then(out => {
-      console.log(out.join("\n"));
       return serialTimes(
         5,
         num =>
           serveTimings("./app/styles/app.scss", prefix, num, destinationPath),
         "Serve Build & Rebuild"
       );
-    })
-    .then(out => console.log(out.join("\n")));
+    });
 }
 
 // Get timings for builds using the ember build command
